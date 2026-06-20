@@ -1,4 +1,4 @@
-use crate::constants::{KEY_BUFFER_CAPACITY, LEVEL_BUFFER_CAPACITY, LOGIC_BUFFER_CAPACITY};
+use crate::constants::{KEY_BUFFER_CAPACITY, KEY_CODONS_AMOUNT, LEVEL_BUFFER_CAPACITY, LOGIC_BUFFER_CAPACITY};
 
 const START: [bool; 4] = [false, false, false, true];
 
@@ -105,5 +105,29 @@ pub fn get_key(logic_buf: [bool; LOGIC_BUFFER_CAPACITY]) -> Option<[bool; KEY_BU
     }
 
     Some(result)
+}
+
+pub fn get_digit_key(key_buf: [bool; KEY_BUFFER_CAPACITY]) -> [u8; KEY_CODONS_AMOUNT] {
+    let mut result = [0u8; KEY_CODONS_AMOUNT];
+
+    for i in 0..KEY_CODONS_AMOUNT {
+        let base = i * 4;
+        let word = [
+            key_buf[base],
+            key_buf[base + 1],
+            key_buf[base + 2],
+            key_buf[base + 3],
+        ];
+
+        result[i] = match word {
+            [true, true, true, false] => 0,   // 1110
+            [true, true, false, true] => 1,   // 1101
+            [true, false, true, true] => 2,   // 1011
+            [false, true, true, true] => 3,   // 0111
+            _ => 0, // fallback (should not happen if validated by get_key)
+        };
+    }
+
+    result
 }
 

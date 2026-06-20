@@ -14,7 +14,7 @@ use defmt::*;
 use embassy_executor::Spawner;
 use embassy_time::{Duration, Timer};
 
-use crate::{constants::LEVEL_BUFFER_CAPACITY, converter::{Conductivity, convert}, hardware::Sensor, utils::{decode, get_key}};
+use crate::{constants::LEVEL_BUFFER_CAPACITY, converter::{Conductivity, convert}, hardware::Sensor, utils::{decode, get_digit_key, get_key}};
 
 // -----------------------------------------------------------------------------
 // Main Application Loop
@@ -40,7 +40,7 @@ async fn main(spawner: Spawner) {
             // Log once every 1000 samples (~20 milliseconds)
             if sample_count >= LEVEL_BUFFER_CAPACITY {
                 //let average = accumulator / sample_count;
-                info!("{:?}", level_buf);
+                //info!("{:?}", level_buf);
 
                 break;
             }
@@ -55,7 +55,8 @@ async fn main(spawner: Spawner) {
 
     let logic_buf = decode(level_buf);
     if let Some(key) = get_key(logic_buf) {
-        info!("{:?}", key);
+        let digits = get_digit_key(key);
+        info!("{:?}", digits);
     } else {
         info!("Key wasn't found");
     }
