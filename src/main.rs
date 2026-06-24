@@ -24,11 +24,15 @@ async fn main(spawner: Spawner) {
     let hw = hardware::init();
     let mut sensor = hw.sensor;
 
+    spawner.spawn(task1(sensor).unwrap());
+}
+
+#[embassy_executor::task]
+async fn task1(mut sensor: Sensor) {
     let mut level_buf: [bool; LEVEL_BUFFER_CAPACITY] = [false; LEVEL_BUFFER_CAPACITY];
     let mut sample_count: usize = 0;
     cortex_m::asm::delay(10000);
     let _ = sensor.enable_key();
-
     loop {
         // Read the analog pin (awaits the ADC EOC interrupt)
         let voltage = sensor.key_level_read().await;
@@ -60,38 +64,4 @@ async fn main(spawner: Spawner) {
     } else {
         info!("Key wasn't found");
     }
-    
-    //spawner.spawn(task1(sensor).unwrap());
 }
-/*
-#[embassy_executor::task]
-async fn task1(mut sensor: Sensor) {
-    let _ = sensor.enable_key();
-    
-    //let mut accumulator: u32 = 0;
-    let mut buf: [u16; 1000] = [0; 1000];
-    let mut sample_count: usize = 0;
-
-    loop {
-        // Read the analog pin (awaits the ADC EOC interrupt)
-        let level = sensor.key_level_read().await;
-        
-        //accumulator += level as u32;
-        buf[sample_count] = level;
-        sample_count += 1;
-
-        // Log once every 1000 samples (~20 milliseconds)
-        if sample_count >= 1000 {
-            //let average = accumulator / sample_count;
-            info!("{:?}", buf);
-
-            //accumulator = 0;
-            sample_count = 0;
-            break;
-        }
-
-        // Wait 20 µs
-        Timer::after(Duration::from_micros(20)).await;
-    }
-}
-    */
